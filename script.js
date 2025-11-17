@@ -1,76 +1,138 @@
-console.log("Скрипт загрузился!"); // Первое, что должно появиться в консоли
-
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("DOM полностью загружен!");
+    console.log("Скрипт для confirmation.html загрузился!");
 
-    const registerForm = document.getElementById('registration-form'); // САМОЕ ВАЖНОЕ: Проверьте, что ID формы правильный!
+    const amountButtons = document.querySelectorAll('.amount-btn');
+    const customAmountInput = document.getElementById('customAmountInput');
+    const selectedAmountDisplay = document.getElementById('selectedAmountDisplay');
+    const depositButton = document.getElementById('depositButton');
+    const paymentSection = document.getElementById('paymentSection');
+    const paymentTimer = document.getElementById('paymentTimer');
+    const closePaymentSectionBtn = document.getElementById('closePaymentSectionBtn');
+    const paymentAmountDisplay = document.getElementById('paymentAmount');
+    const usdtAddressDisplay = document.getElementById('usdtAddress');
+    const usdtQrCode = document.getElementById('usdtQrCode'); // Обращаемся к элементу img
 
-    if (registerForm) {
-        console.log("Форма регистрации найдена с ID:", registerForm.id);
+    let currentSelectedAmount = 0;
+    const MIN_DEPOSIT = 100;
+    let timerInterval;
+    let timeLeft = 15 * 60; // 15 минут
 
-        registerForm.addEventListener('submit', function(event) {
-            console.log("Событие submit формы перехвачено!");
-            event.preventDefault(); // Предотвращаем стандартную отправку формы
-            console.log("event.preventDefault() выполнен.");
+    // --- Ваши крипто-реквизиты ---
+    const cryptoPaymentDetails = {
+        usdtTRC20: {
+            address: "TTxL8srvCqom7RebeyZAjuWyActK9R9SD4",
+            // QR-код теперь указывается напрямую в HTML, здесь только адрес
+        }
+    };
+    // --- Конец крипто-реквизитов ---
 
-            // Получаем значения полей
-            const loginInput = document.getElementById('login');
-            const passwordInput = document.getElementById('password');
-            const confirmPasswordInput = document.getElementById('confirmPassword');
-            const roleInputs = document.querySelectorAll('input[name="role"]');
+    function updateDepositButtonState() {
+        if (currentSelectedAmount >= MIN_DEPOSIT) {
+            depositButton.disabled = false;
+            depositButton.classList.add('active');
+        } else {
+            depositButton.disabled = true;
+            depositButton.classList.remove('active');
+        }
+    }
 
-            if (!loginInput || !passwordInput || !confirmPasswordInput) {
-                console.error("Ошибка: Не найдены поля ввода login, password или confirmPassword!");
-                return;
-            }
+    function formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        const formattedMinutes = String(minutes).padStart(2, '0');
+        const formattedSeconds = String(remainingSeconds).padStart(2, '0');
+        return `${formattedMinutes}:${formattedSeconds}`;
+    }
 
-            const login = loginInput.value;
-            const password = passwordInput.value;
-            const confirmPassword = confirmPasswordInput.value;
+    function startTimer() {
+        paymentTimer.textContent = formatTime(timeLeft);
+        paymentTimer.classList.remove('expired');
+        depositButton.style.display = 'none';
+        customAmountInput.disabled = true;
+        amountButtons.forEach(btn => btn.disabled = true);
+        selectedAmountDisplay.textContent = currentSelectedAmount;
 
-            let selectedRoleValue = '';
-            let roleFound = false;
-            roleInputs.forEach(radio => {
-                if (radio.checked) {
-                    selectedRoleValue = radio.value;
-                    roleFound = true;
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            paymentTimer.textContent = formatTime(timeLeft);
+
+            if (timeLeft <= 0) {
+
+                            clearInterval(timerInterval);
+                paymentTimer.textContent = "Время вышло!";
+                paymentTimer.classList.add('expired');
+                if (closePaymentSectionBtn) {
+                    closePaymentSectionBtn.style.display = 'inline-block';
                 }
-            });
-
-            // Простая валидация
-            if (login.trim() === '' || password.trim() === '' || confirmPassword.trim() === '') {
-                console.log("Валидация: Пожалуйста, заполните все поля!");
-                // alert("Пожалуйста, заполните все поля!"); // Можно раскомментировать для видимого сообщения
-                return;
             }
+        }, 1000);
+    }
 
-            if (password !== confirmPassword) {
-                console.log("Валидация: Пароли не совпадают!");
-                // alert("Пароли не совпадают!");
-                return;
-            }
+    function showPaymentSection() {
+        paymentSection.style.display = 'block';
+        if (closePaymentSectionBtn) {
+            closePaymentSectionBtn.style.display = 'inline-block';
+        }
 
-            if (!roleFound) { // Проверяем, выбрана ли роль
-                console.log("Валидация: Пожалуйста, выберите вашу роль!");
-                // alert("Пожалуйста, выберите вашу роль!");
-                return;
-            }
+        // Заполняем реквизиты
+        paymentAmountDisplay.textContent = currentSelectedAmount;
+        usdtAddressDisplay.textContent = cryptoPaymentDetails.usdtTRC20.address;
+        // QR-код уже установлен в HTML, если нужно динамически менять, то здесь
+        // usdtQrCode.src = 'путь_к_вашему_qr_коду.png'; // Или сгенерировать динамически
 
-            // Если все проверки пройдены, имитируем успешную регистрацию
-            console.log("Валидация пройдена успешно. Данные:", {
-                login: login,
-                password: password,
-                role: selectedRoleValue
-            });
+        if (timerInterval) {
+            clearInterval(timerInterval);
+        }
+        timeLeft = 15 * 60; // Сброс времени
+        startTimer();
+    }
 
-            // Перенаправляем на страницу подтверждения
-            console.log("Начинаем перенаправление на confirmation.html...");
-            setTimeout(() => {
-                window.location.href = 'confirmation.html';
-                console.log("Перенаправление инициировано.");
-            }, 500); // 0.5 секунды задержки
+    amountButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            amountButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+
+            currentSelectedAmount = parseInt(this.dataset.amount);
+            selectedAmountDisplay.textContent = currentSelectedAmount;
+
+            customAmountInput.value = '';
+            updateDepositButtonState();
         });
-    } else {
-        console.error("Критическая ошибка: Форма регистрации с ID 'registration-form' не найдена на странице!");
+    });
+
+    customAmountInput.addEventListener('input', function() {
+        const enteredAmount = parseInt(this.value) || 0;
+        currentSelectedAmount = enteredAmount;
+        selectedAmountDisplay.textContent = currentSelectedAmount;
+
+        amountButtons.forEach(btn => btn.classList.remove('active'));
+        updateDepositButtonState();
+    });
+
+    updateDepositButtonState();
+
+    depositButton.addEventListener('click', function() {
+        if (!this.disabled) {
+            showPaymentSection();
+        }
+    });
+
+    if (closePaymentSectionBtn) {
+        closePaymentSectionBtn.addEventListener('click', function() {
+            paymentSection.style.display = 'none';
+            if (this.style.display !== 'none') {
+                this.style.display = 'none';
+            }
+            depositButton.style.display = 'block';
+            customAmountInput.disabled = false;
+            amountButtons.forEach(btn => btn.disabled = false);
+
+            clearInterval(timerInterval);
+            paymentTimer.textContent = '';
+            paymentTimer.classList.remove('expired');
+            currentSelectedAmount = 0;
+            selectedAmountDisplay.textContent = currentSelectedAmount;
+            updateDepositButtonState();
+        });
     }
 });
