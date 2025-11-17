@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Имитируем задержку перед перенаправлением
             setTimeout(() => {
-                window.location.href = 'account.html'; // Перенаправляем на страницу пополнения
+                window.location.href = 'confirmation.html'; // Перенаправляем на страницу пополнения
             }, 2000); // 2 секунды
         });
     }
