@@ -1,40 +1,61 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const registerForm = document.getElementById('registration-form');
 
-    // --- Логика для страницы регистрации (index.html) ---
-    const registerForm = document.getElementById('registerForm');
-    const messageElement = registerForm.querySelector('.message');
-
-    if (registerForm) { // Проверяем, находимся ли мы на странице регистрации
-        registerForm.addEventListener('submit', (event) => {
+    if (registerForm) {
+        registerForm.addEventListener('submit', function(event) {
             event.preventDefault(); // Предотвращаем стандартную отправку формы
 
-            const login = document.getElementById('login').value;
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            const role = document.querySelector('input[name="role"]:checked').value;
+            // Получаем значения полей
+            const loginInput = document.getElementById('login');
+            const passwordInput = document.getElementById('password');
+            const confirmPasswordInput = document.getElementById('confirmPassword');
+            const roleInputs = document.querySelectorAll('input[name="role"]');
+
+            const login = loginInput.value;
+            const password = passwordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+
+            let selectedRoleValue = '';
+            roleInputs.forEach(radio => {
+                if (radio.checked) {
+                    selectedRoleValue = radio.value;
+                }
+            });
 
             // Простая валидация
+            if (login.trim() === '' || password.trim() === '' || confirmPassword.trim() === '') {
+                // Если нужно сообщение, можно использовать alert:
+                // alert("Пожалуйста, заполните все поля!");
+                console.log("Ошибка: Пожалуйста, заполните все поля!");
+                return;
+            }
+
             if (password !== confirmPassword) {
-                messageElement.textContent = 'Пароли не совпадают!';
-                messageElement.className = 'message error'; // Добавляем класс error
-                return;
-            }
-            if (login.trim() === '' || password.trim() === '') {
-                messageElement.textContent = 'Пожалуйста, заполните все поля!';
-                messageElement.className = 'message error';
+                // alert("Пароли не совпадают!");
+                console.log("Ошибка: Пароли не совпадают!");
                 return;
             }
 
-            // Здесь в идеале должна быть отправка данных на сервер
-            // Для простоты, имитируем успешную регистрацию
-            messageElement.textContent = 'Регистрация прошла успешно! Перенаправление...';
-            messageElement.className = 'message success'; // Добавляем класс success
+            if (selectedRoleValue === '') {
+                // alert("Пожалуйста, выберите вашу роль!");
+                console.log("Ошибка: Пожалуйста, выберите вашу роль!");
+                return;
+            }
 
-            // Имитируем задержку перед перенаправлением
+            // Если все проверки пройдены, имитируем успешную регистрацию
+            console.log("Данные для регистрации:", {
+                login: login,
+                password: password,
+                role: selectedRoleValue
+            });
+
+            // Перенаправляем на страницу подтверждения после небольшой задержки
+            // Это должно сработать, если нет других ошибок
             setTimeout(() => {
-                window.location.href = 'confirmation.html'; // Перенаправляем на страницу пополнения
-            }, 2000); // 2 секунды
+                window.location.href = 'confirmation.html';
+            }, 500); // Уменьшил задержку до 0.5 секунды для более быстрого отклика
         });
+    } else {
+        console.error("Форма регистрации с id 'registration-form' не найдена!");
     }
-
- 
+});
