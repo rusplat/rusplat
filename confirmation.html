@@ -1,37 +1,176 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Пополнение счета</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .payment-details {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px dashed #ccc;
+            background-color: #f9f9f9;
+            display: none;
+            text-align: left;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .payment-details h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .payment-details p {
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        .payment-details .amount {
+            font-weight: bold;
+            color: #007bff;
+        }
+        .payment-details .address {
+            font-weight: bold;
+            font-family: 'Courier New', Courier, monospace;
+            color: #28a745;
+            word-break: break-all;
+        }
+        .payment-qr {
+            text-align: center;
+            margin-top: 15px;
+        }
+        .payment-qr img {
+            max-width: 150px;
+            height: auto;
+            border: 1px solid #eee;
+            padding: 5px;
+            background-color: white;
+        }
+        .timer {
+            margin-top: 15px;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #dc3545;
+            text-align: center;
+        }
+        .timer.expired {
+            color: #6c757d;
+        }
+        .deposit-card {
+            width: 450px;
+            margin: 50px auto;
+            padding: 30px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            background-color: white;
+        }
+        .amount-buttons button {
+            margin: 5px;
+            padding: 10px 15px;
+            cursor: pointer;
+            border: 1px solid #007bff;
+            background-color: white;
+            color: #007bff;
+            border-radius: 4px;
+        }
+        .amount-buttons button.active {
+            background-color: #007bff;
+            color: white;
+        }
+        .custom-amount-input-group {
+            margin: 15px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #customAmountInput {
+            padding: 10px;
+            margin-right: 5px;
+ChatGPT | Midjourney, [17 ноя. 2025 в 16:35]
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .currency-label {
+            font-weight: bold;
+            color: #333;
+        }
+        #selectedAmountDisplay {
+            font-weight: bold;
+            color: #28a745;
+        }
+        #depositButton {
+            margin-top: 20px;
+            padding: 12px 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        #depositButton:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        #depositButton.active {
+            background-color: #0056b3;
+        }
+        .close-dialog {
+            background-color: #6c757d;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .close-dialog:hover {
+            background-color: #5a6268;
+        }
+    </style>
+</head>
+<body>
+    <div class="deposit-card">
+        <h2>Пополнение счета</h2>
+        <p>Минимальная сумма пополнения: 100 USD.</p>
+        <p>Выберите сумму, на которую хотите пополнить ваш счет:</p>
 
- <!DOCTYPE html>
-    <html lang="ru">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Пополнение счета</title>
-        <link rel="stylesheet" href="style.css">
-    </head>
-    <body>
-
-        <div class="deposit-card">
-            <h2>Пополнение счета</h2>
-            <p>Минимальная сумма пополнения: 100 USD.</p>
-            <p>Выберите сумму, на которую хотите пополнить ваш счет:</p>
-
-            <div class="amount-buttons">
-                <button class="amount-btn" data-amount="100">100 USD</button>
-                <button class="amount-btn" data-amount="500">500 USD</button>
-                <button class="amount-btn" data-amount="1000">1000 USD</button>
-            </div>
-
-            <p class="or-text">Или введите свою сумму:</p>
-            <div class="custom-amount-input-group">
-                <input type="number" id="customAmountInput" placeholder="Введите сумму" min="100">
-                <span class="currency-label">USD</span>
-            </div>
-
-            <p class="selected-amount-display">Выбрано: <span id="selectedAmountValue">0</span> USD</p>
-
-            <button id="depositButton" class="deposit-button" disabled>Пополнить</button>
+        <div class="amount-buttons">
+            <button class="amount-btn" data-amount="100">100 USD</button>
+            <button class="amount-btn" data-amount="500">500 USD</button>
+            <button class="amount-btn" data-amount="1000">1000 USD</button>
         </div>
 
-        <!-- ОЧЕНЬ ВАЖНО: Подключение script.js -->
-        <script src="code2.js"></script> 
-    </body>
-    </html>
+        <div class="custom-amount-input-group">
+            <input type="number" id="customAmountInput" placeholder="Или введите свою сумму">
+            <span class="currency-label">USD</span>
+        </div>
+
+        <p>Выбрано: <span id="selectedAmountDisplay">0</span> USD</p>
+
+        <button id="depositButton" disabled>Пополнить</button>
+
+        <!-- Блок для отображения реквизитов и таймера (скрыт по умолчанию) -->
+        <div id="paymentSection" class="payment-details">
+            <h3>Реквизиты для оплаты USDT (TRC20):</h3>
+            <p>Переведите точную сумму <span class="amount" id="paymentAmount"></span> USD на следующий адрес:</p>
+            <p>Адрес кошелька: <span class="address" id="usdtAddress"></span></p>
+            <p>Сеть: <span>TRC20</span></p>
+
+            <div class="payment-qr">
+                <!-- Укажите путь к вашему QR-коду -->
+                <img id="usdtQrCode" src="usdt_trc20_qr.png" alt="QR Code для USDT TRC20">
+            </div>
+
+            <div class="timer" id="paymentTimer"></div>
+            <p style="font-size: 0.8em; color: #6c757d;">Пожалуйста, совершите оплату в течение указанного времени.</p>
+        </div>
+
+        <button id="closePaymentSectionBtn" class="close-dialog" style="display: none;">Закрыть</button>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
